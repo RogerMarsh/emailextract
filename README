@@ -1,0 +1,85 @@
+================================================
+Extract text from emails selected from mailboxes
+================================================
+
+.. contents::
+
+
+Description
+===========
+
+This package provides a text extraction interface given directories of email files selected from mailboxes populated by an email client.
+
+Specify selection rules for text by email source and attachment type and name.
+
+Extract text from a set of emails.
+
+Allow specific emails to be ignored when extracting text.
+
+
+Installation Instructions
+=========================
+
+Usually this package will be installed by installing `ChessResults`_.
+
+Install the package by typing
+
+   python setup.py install
+
+at the command prompt with setup.py in the current directory.
+
+You may need to give the path and version of Python depending on your system's configuration:
+
+   <path to python>/python<version> setup.py install
+
+   For example
+
+      C:\\Python34\\python setup.py install
+
+         on Microsoft Windows or
+
+      python3.4 setup.py install
+
+         on Unix-like systems.
+
+Use `Python`_ 3.4 or later.
+
+
+Run
+===
+
+The command to run this package is:
+
+   python -m emailextract.emailextract
+
+You may need to give the path and version of Python depending on your system's configuration:
+
+   <path to python>/python<version> -m emailextract.emailextract
+
+   For example
+
+      C:\\Python33\\python -m emailextract.emailextract
+
+         on Microsoft Windows or
+
+      python3.4 -m emailextract.emailextract
+
+         on Unix-like systems.
+
+Or use the facilities of your desktop (Microsoft Windows, GNOME, KDE, ...) to set up a convenient way of starting emailextract. 
+
+
+Restrictions
+============
+
+At most one email per sender per second, looking at the date sent, is allowed.
+
+
+Notes
+=====
+
+The configuration file editor interface is almost unusable.
+
+
+.. _`Python`: https://python.org
+.. _`ChessResults`: http://solentware.co.uk/grading.html

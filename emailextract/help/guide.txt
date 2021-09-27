@@ -1,0 +1,45 @@
+Summary
+
+
+Create a file containing the rules for extracting text from emails.
+
+Extract text from emails in a directory, one email per file, following the rules.
+
+Save the extracted text files in a directory.
+
+
+Contents
+
+
+	Summary
+	Contents
+	Why
+	Getting started
+
+
+Why
+
+
+Email clients provide good features for filing emails by subject, who sent them, and so forth.  But when collecting data sent regularly but infrequently and processing that data even less frequently, it is easy to forget data.
+
+The sender may forget to label the emails correctly and the recipient may forget to deal with the mistake immediately, leading to the effective loss of the data amongst all the other unrelated emails.  Email clients are designed to deal with emails one-at-a-time, but the ability to scroll through all the text at once seems a better way to solve the problem: provided all the emails that might be relevant are picked.
+
+Couple this with the ability, in some cases, to process the data automatically makes an email selector outside the email client attractive.
+
+
+Getting started
+
+
+Three empty panels are displayed.  Top left is for displaying the rules file,  bottom left is for displaying a summary of the selected emails, and right is for displaying the text extracted from the emails.
+
+Create a file to hold a set of rules for selecting emails using the 'File | New' menu option.
+
+Specify the rules using the 'Actions | Option editor' menu option.
+
+Use 'right-click' on the right-hand and top-left panes to add and remove 'ignore filename' lines from the rules.  It may not be possible to specify general rules which ignore particular emails.  Typing these is allowed, but getting the file names correct this way is error-prone.
+
+Save the rules using the 'File | Save' menu option.
+
+Verify the effect of the rules using the 'Actions | Show selection' menu option.
+
+Apply the rules to the emails using the 'Actions | Apply selection' menu option.

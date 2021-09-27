@@ -1,0 +1,14 @@
+EmailExtract extracts text from email files using rules given in a configuration file and stores them as files in a directory.  The email files each contain one email copied from an email client's mailbox, and the extracted files are created and edited using Python's difflib module.
+
+
+This is emailextract-0.7.1
+
+It depends on the following being installed:
+solentware-grid-2.1
+solentware-misc-1.3
+
+EmailExtract uses features introduced at Python3.3.
+
+Python3.3, or later versions when available, must be installed to run EmailExtract.
+
+tkinter, part of Python, must be installed to run EmailExtract.  Sometimes this is installed separately.
