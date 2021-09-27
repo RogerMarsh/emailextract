@@ -78,6 +78,8 @@ At most one email per sender per second, looking at the date sent, is allowed.
 Notes
 =====
 
+The current implementation does just enough to support the `ChessResults`_ package.
+
 The configuration file editor interface is almost unusable.
 
 

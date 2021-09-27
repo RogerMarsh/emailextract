@@ -9,5 +9,5 @@ Text can be extracted from the email body and attachments containing text which
 usually means '*.txt', '*.csv', '*.pdf', and various spreadsheets.
 
 """
-APPLICATION_NAME = 'EmailExtract'
-ERROR_LOG = 'ErrorLog'
+APPLICATION_NAME = "EmailExtract"
+ERROR_LOG = "ErrorLog"
