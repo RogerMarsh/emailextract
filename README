@@ -20,29 +20,15 @@ Allow specific emails to be ignored when extracting text.
 Installation Instructions
 =========================
 
-Usually this package will be installed by installing `ChessResults`_.
+This package is not available on PyPI, or any other package index, but can be installed by typing
 
-Install the package by typing
+   python -m pip install --user --trusted-host solentware.co.uk --find-links http://solentware.co.uk/components.html emailextract
 
-   python setup.py install
+at the command prompt.
 
-at the command prompt with setup.py in the current directory.
+See pip documentation for alternatives and platform-specific points.
 
-You may need to give the path and version of Python depending on your system's configuration:
-
-   <path to python>/python<version> setup.py install
-
-   For example
-
-      C:\\Python34\\python setup.py install
-
-         on Microsoft Windows or
-
-      python3.4 setup.py install
-
-         on Unix-like systems.
-
-Use `Python`_ 3.4 or later.
+Then run 'python -m pip check' to identify other packages which need to be installed.
 
 
 Run
@@ -83,5 +69,6 @@ The current implementation does just enough to support the `ChessResults`_ packa
 The configuration file editor interface is almost unusable.
 
 
-.. _`Python`: https://python.org
-.. _`ChessResults`: http://solentware.co.uk/grading.html
+.. _Python: https://python.org
+.. _pip: https://packaging.python.org/installing
+.. _ChessResults: http://solentware.co.uk/grading.html
