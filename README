@@ -22,7 +22,7 @@ Installation Instructions
 
 This package is not available on PyPI, or any other package index, but can be installed by typing
 
-   python -m pip install --user --trusted-host solentware.co.uk --find-links http://solentware.co.uk/components.html emailextract
+   python -m pip install --user --trusted-host solentware.co.uk --find-links http://solentware.co.uk/wheels.html emailextract
 
 at the command prompt.
 
