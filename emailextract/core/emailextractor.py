@@ -1311,8 +1311,8 @@ class ExtractText(object):
             if os.path.basename((os.path.splitext(k)[0])) == "document":
                 paragraphs = []
                 tree = xml.etree.ElementTree.XML(v)
-                for p in tree.getiterator(nsb + "p"):
-                    t = [n.text for n in p.getiterator(nsb + "t") if n.text]
+                for p in tree.iter(nsb + "p"):
+                    t = [n.text for n in p.iter(nsb + "t") if n.text]
                     if t:
                         paragraphs.append("".join(t))
                 text.append("\n\n".join(paragraphs))
