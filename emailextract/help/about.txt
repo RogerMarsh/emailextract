@@ -3,7 +3,7 @@ EmailExtract extracts text from email files using rules given in a configuration
 
 Run 'python -m pip show emailextract' at a command line to display version and dependency (requires and required-by) information.
 
-Version numbers for the packages listed under 'requires' are given in the setup.py file.
+Version numbers for the packages listed under 'requires' are given in the setup.cfg file.
 
 Run 'python -m pip check' at a command line to display discrepancies between required and installed versions of packages.
 
