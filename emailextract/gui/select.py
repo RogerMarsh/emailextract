@@ -41,7 +41,12 @@ class Select(ExceptionHandler):
     """Define and use an email select and store configuration file."""
 
     def __init__(
-        self, folder=None, use_toplevel=False, emailextractor=None, **kargs
+        self,
+        folder=None,
+        use_toplevel=False,
+        emailextractor=None,
+        application_name=APPLICATION_NAME,
+        **kargs
     ):
         """Create the database and GUI objects.
 
@@ -53,14 +58,15 @@ class Select(ExceptionHandler):
         else:
             self.root = tkinter.Tk()
         try:
+            self._application_name = application_name
             if emailextractor:
                 self._emailextractor = emailextractor
             else:
                 self._emailextractor = EmailExtractor
             if folder is not None:
-                self.root.wm_title(" - ".join((APPLICATION_NAME, folder)))
+                self.root.wm_title(" - ".join((application_name, folder)))
             else:
-                self.root.wm_title(APPLICATION_NAME)
+                self.root.wm_title(application_name)
             self.root.wm_minsize(
                 width=startup_minimum_width, height=startup_minimum_height
             )
@@ -216,6 +222,7 @@ class Select(ExceptionHandler):
             self._most_recent_action = None
 
         except:
+            raise
             self.root.destroy()
             del self.root
 
