@@ -151,6 +151,9 @@ _MOST_RECENT_DATE = "mostrecentdate"
 _EMAIL_SENDER = "emailsender"
 IGNORE_EMAIL = "ignore"
 
+# The name of the configuration file for extracting text from emails.
+EXTRACTED_CONF = "extracted.conf"
+
 # The extract configuration file entry naming the collect configuration file
 # for collecting emails from email client mailboxes.
 COLLECT_CONF = "collect_conf"

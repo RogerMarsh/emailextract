@@ -15,10 +15,10 @@ from time import strftime
 
 from solentware_misc.gui.exceptionhandler import ExceptionHandler
 from solentware_misc.gui import textreadonly
+from solentware_misc.gui.configuredialog import ConfigureDialog
 
 from . import help
 from .. import APPLICATION_NAME
-from .configuredialog import ConfigureDialog
 from ..core.emailextractor import (
     EmailExtractor,
     EmailExtractorError,
@@ -26,6 +26,7 @@ from ..core.emailextractor import (
     COLLECTED,
     EXTRACTED,
     MEDIA_TYPES,
+    EXTRACTED_CONF,
 )
 
 startup_minimum_width = 340
@@ -58,7 +59,7 @@ class Select(ExceptionHandler):
         else:
             self.root = tkinter.Tk()
         try:
-            self._application_name = application_name
+            self.application_name = application_name
             if emailextractor:
                 self._emailextractor = emailextractor
             else:
@@ -248,28 +249,28 @@ class Select(ExceptionHandler):
         return self.root
 
     def file_new(self):
-        """Create and open a new league secretary database."""
+        """Create and open a new extract text from email configuration file."""
         if self._configuration is not None:
             tkinter.messagebox.showinfo(
                 parent=self.get_toplevel(),
-                title="New Extraction Rules",
-                message="Close the current extraaction rules first.",
+                title=self.application_name,
+                message="Close the current extraction rules first.",
             )
             return
         config_file = tkinter.filedialog.asksaveasfilename(
             parent=self.get_toplevel(),
-            title="New Extraction Rules",
+            title=" ".join(("New", self.application_name)),
             defaultextension=".conf",
             filetypes=(("Extraction Rules", "*.conf"),),
-            initialfile="",
-            initialdir="~",
+            initialfile=EXTRACTED_CONF,
+            initialdir=self._folder if self._folder else "~",
         )
         if not config_file:
             return
         if (
             tkinter.messagebox.askquestion(
                 parent=self.get_toplevel(),
-                title="Close",
+                title=" ".join(("New", self.application_name)),
                 message="".join(
                     (
                         "Do you want to specify a directory containing CSV ",
@@ -283,7 +284,7 @@ class Select(ExceptionHandler):
             media_types_directory = tkinter.filedialog.askdirectory(
                 parent=self.get_toplevel(),
                 title="Media Types CSV files",
-                initialdir="~",
+                initialdir=self._folder if self._folder else "~",
             )
         else:
             media_types_directory = ""
@@ -313,23 +314,24 @@ class Select(ExceptionHandler):
             fn.close()
         self._configuration = config_file
         self._folder = os.path.dirname(config_file)
+        self.root.wm_title(" - ".join((self.application_name, config_file)))
 
     def file_open(self):
         """Open an existing extraction rules file."""
         if self._configuration is not None:
             tkinter.messagebox.showinfo(
                 parent=self.get_toplevel(),
-                title="Extraction Rules",
+                title=self.application_name,
                 message="Close the current extraction rules first.",
             )
             return
         config_file = tkinter.filedialog.askopenfilename(
             parent=self.get_toplevel(),
-            title="Open Extraction Rules",
+            title=" ".join(("Open", self.application_name)),
             defaultextension=".conf",
             filetypes=(("Extraction Rules", "*.conf"),),
-            initialfile="",
-            initialdir="~",
+            initialfile=EXTRACTED_CONF,
+            initialdir=self._folder if self._folder else "~",
         )
         if not config_file:
             return
@@ -341,19 +343,21 @@ class Select(ExceptionHandler):
             fn.close()
         self._configuration = config_file
         self._folder = os.path.dirname(config_file)
+        self.root.wm_title(" - ".join((self.application_name, config_file)))
 
     def file_close(self):
         """Close the open extraction rules file."""
         if self._configuration is None:
             tkinter.messagebox.showinfo(
                 parent=self.get_toplevel(),
-                title="Extraction Rules",
-                message="Cannot close.\n\nThere is no database open.",
+                title=self.application_name,
+                message="Cannot close.\n\nThere is no file open.",
             )
             return
-        closemsg = "Confirm Close.\n\nChanges not already saved will be lost."
         dlg = tkinter.messagebox.askquestion(
-            parent=self.get_toplevel(), title="Close", message=closemsg
+            parent=self.get_toplevel(),
+            title=self.application_name,
+            message="Confirm Close.",
         )
         if dlg == tkinter.messagebox.YES:
             self._clear_email_tags()
@@ -364,53 +368,19 @@ class Select(ExceptionHandler):
             self._configuration = None
             self._configuration_edited = False
             self._email_collector = None
+            self.root.wm_title(
+                " - ".join((self.application_name, self._folder))
+            )
 
     def file_quit(self):
         """Quit the extraction application."""
-        quitmsg = "Confirm Quit.\n\nChanges not already saved will be lost."
         dlg = tkinter.messagebox.askquestion(
-            parent=self.get_toplevel(), title="Quit", message=quitmsg
+            parent=self.get_toplevel(),
+            title=self.application_name,
+            message="Confirm Quit.",
         )
         if dlg == tkinter.messagebox.YES:
             self.root.destroy()
-
-    # Probably not going to be used because 'Actions | Option editor' does it.
-    def file_save(self):
-        """Save the open extraction rules file."""
-        if self._configuration is None:
-            tkinter.messagebox.showinfo(
-                parent=self.get_toplevel(),
-                title="Save",
-                message="Cannot save.\n\nExtraction rules file not open.",
-            )
-            return
-        if (
-            tkinter.messagebox.askquestion(
-                parent=self.get_toplevel(),
-                title="Save",
-                message="".join(
-                    (
-                        "Confirm save extraction rules to\n",
-                        self._configuration,
-                    )
-                ),
-            )
-            != tkinter.messagebox.YES
-        ):
-            return
-        fn = open(self._configuration, "w")
-        try:
-            fn.write(
-                self.configctrl.get("1.0", " ".join((tkinter.END, "-1 chars")))
-            )
-            self._clear_email_tags()
-            self.emailtextctrl.delete("1.0", tkinter.END)
-            self.emaillistctrl.delete("1.0", tkinter.END)
-            self._configuration_edited = False
-            self._email_collector = None
-        finally:
-            fn.close()
-        return True
 
     def file_save_copy_as(self):
         """Save copy of open extraction rules and keep current open."""
@@ -423,7 +393,7 @@ class Select(ExceptionHandler):
             return
         config_file = tkinter.filedialog.asksaveasfilename(
             parent=self.get_toplevel(),
-            title="Save Extraction rules As",
+            title=self.application_name.join(("Save ", " As")),
             defaultextension=".conf",
             filetypes=(("Extraction Rules", "*.conf"),),
             initialfile=os.path.basename(self._configuration),
@@ -462,7 +432,12 @@ class Select(ExceptionHandler):
             return
         config_text = ConfigureDialog(
             self.root,
-            self.configctrl.get("1.0", " ".join((tkinter.END, "-1 chars"))),
+            configuration=self.configctrl.get(
+                "1.0", " ".join((tkinter.END, "-1 chars"))
+            ),
+            dialog_title=" ".join(
+                (self.application_name, "configuration editor")
+            ),
         ).config_text
         if config_text is None:
             return
