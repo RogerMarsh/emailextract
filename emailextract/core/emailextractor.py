@@ -226,14 +226,13 @@ _ODT = ".odt"
 
 
 class EmailExtractorError(Exception):
-    pass
+    """Exception class for emailextractor module."""
 
 
 # There are two distinct sets of configuration settings; email selection and
 # parsing rules. EmailExtractor will end up a subclass of "Parse" which can be
 # shared with EventSeason for text parsing rules.
 class EmailExtractor(object):
-
     """Extract emails matching selection criteria from email client store.
 
     By default look for emails sent or received using the Opera email client
@@ -291,7 +290,7 @@ class EmailExtractor(object):
             self._extractemail = extractemail
 
     def parse(self):
-        """ """
+        """Set rules, from configuration file, for email text extraction."""
         self.criteria = None
         criteria = self._parser(parent=self.parent).parse(self.configuration)
         if criteria:
@@ -302,7 +301,7 @@ class EmailExtractor(object):
         return True
 
     def _select_emails(self):
-        """ """
+        """Calculate and return emails matching requested from addressees."""
         if self.criteria is None:
             return
         self.email_client = self._extractemail(
@@ -312,14 +311,14 @@ class EmailExtractor(object):
 
     @property
     def selected_emails(self):
-        """ """
+        """Return emails selected by matching requested from addressees."""
         if self.email_client:
             return self.email_client.selected_emails
         return self._select_emails()
 
     @property
     def excluded_emails(self):
-        """ """
+        """Return set of emails to ignore."""
         if not self.email_client:
             if not self._select_emails():
                 return
@@ -327,16 +326,21 @@ class EmailExtractor(object):
 
     @property
     def eventdirectory(self):
-        """ """
+        """Return the path name of the document directory."""
         return self.email_client.eventdirectory
 
     @property
     def outputdirectory(self):
-        """ """
+        """Return the path name of the extracted directory."""
         return self.email_client._extracts
 
     def copy_emails(self):
-        """ """
+        """Copy text of emails selected from collected to extracted directory.
+
+        Each email file in the collected directory will have a corresponding
+        text difference file in the extracted directory.
+
+        """
         difference_tags = []
         additional = []
         for e, em in enumerate(self.selected_emails):
@@ -404,23 +408,27 @@ class EmailExtractor(object):
         return None, additional
 
     def ignore_email(self, filename):
-        """ """
+        """Add email to list of ignored emails."""
         if self.email_client.ignore is None:
             self.email_client.ignore = set()
         self.email_client.ignore.add(filename)
 
     def include_email(self, filename):
-        """ """
+        """Remove an email from list of ignored emails."""
         if self.email_client.ignore is None:
             self.email_client.ignore = set()
         self.email_client.ignore.remove(filename)
 
 
 class Parser(object):
-
     """Parse configuration file."""
 
     def __init__(self, parent=None):
+        """Set parent widget to own configuration rule error dialogues.
+
+        The rules for handling configuration file keywoords are set.
+
+        """
         self.parent = parent
         # Rules for processing conf file
         self.keyword_rules = {
@@ -448,14 +456,17 @@ class Parser(object):
         }
 
     def assign_value(self, v, args, args_key):
+        """Set dict item args[args_key] to v from configuration file."""
         args[args_key] = v
 
     def add_value_to_set(self, v, args, args_key):
+        """Add v, from configuration file, to set args[args_key]."""
         if args_key not in args:
             args[args_key] = set()
         args[args_key].add(v)
 
     def add_values_to_dict_of_sets(self, v, args, args_key):
+        """Add v, from configuration file, to set at dict args[args_key]."""
         sep = v[0]
         v = v.split(sep=v[0], maxsplit=2)
         if len(v) < 3:
@@ -466,6 +477,7 @@ class Parser(object):
         args[args_key].setdefault(v[1], set()).update(v[2].split(sep=sep))
 
     def _parse_error_dialogue(self, message):
+        """Show dialogue for errors reading configuration file."""
         tkinter.messagebox.showinfo(
             parent=self.parent,
             title="Configuration File",
@@ -478,6 +490,7 @@ class Parser(object):
         )
 
     def parse(self, configuration):
+        """Return arguments from configuration file."""
         args = {}
         for line in configuration.split("\n"):
             g = EmailExtractor.email_select_line.match(line)
@@ -503,7 +516,6 @@ class Parser(object):
 
 
 class MessageFile(EmailMessage):
-
     """Extend EmailMessage class with a method to generate a filename.
 
     The From and Date headers are used.
@@ -523,7 +535,6 @@ class MessageFile(EmailMessage):
 
 
 class ExtractEmail(object):
-
     """Extract emails matching selection criteria from email store."""
 
     def __init__(
@@ -787,14 +798,14 @@ class ExtractEmail(object):
 
     @property
     def selected_emails(self):
-        """ """
+        """Return emails selected by matching requested from addressees."""
         if self._selected_emails is None:
             self._selected_emails = self._get_emails_for_from_addressees()
         return self._selected_emails
 
     @property
     def excluded_emails(self):
-        """ """
+        """Return set of emails to ignore."""
         if not self.ignore:
             return set()
         return set(self.ignore)
@@ -804,7 +815,7 @@ class ExtractText(object):
     """Repreresent the stages in processing an email."""
 
     def __init__(self, filename, emailstore):
-        """ """
+        """Set up to extract text from mailstore into filename."""
         self.filename = filename
         self._emailstore = emailstore
         self._message = None
@@ -825,12 +836,12 @@ class ExtractText(object):
 
     @property
     def email_path(self):
-        """ """
+        """Return mailstore path name."""
         return os.path.join(self._emailstore.mailstore, self.filename)
 
     @property
     def difference_file_path(self):
-        """ """
+        """Return difference file's path name without extension."""
         return os.path.join(
             self._emailstore._extracts, os.path.splitext(self.filename)[0]
         )
@@ -847,7 +858,11 @@ class ExtractText(object):
         return self._difference_file_exists
 
     def is_from_addressee_in_selection(self, selection):
-        """ """
+        """Return filename if addressee is in selection.
+
+        The file name is generated by self.message.generate_filename function.
+
+        """
         if selection is None:
             return True
         from_ = parseaddr(self.message.get("From"))[-1]
@@ -865,7 +880,7 @@ class ExtractText(object):
 
     @property
     def message(self):
-        """ """
+        """Return object created by email.message_from_binary_file function."""
         if self._message is None:
             mf = open(self.email_path, "rb")
             try:
@@ -886,7 +901,7 @@ class ExtractText(object):
 
     @property
     def encoded_text(self):
-        """ """
+        """Return encoded text extracted from emails."""
         if self._encoded_text is None:
             ems = self._emailstore
             text = []
@@ -921,6 +936,7 @@ class ExtractText(object):
     def _extract_text(
         self, content_type, filename, payload, text, charset=None
     ):
+        """Bind text extracted from emails to _emailtore attribute."""
         ems = self._emailstore
         if content_type == _PDF:
             if _PDFTOTEXT:
@@ -957,7 +973,7 @@ class ExtractText(object):
 
     @property
     def extracted_text(self):
-        """ """
+        """Return text extracted from emails."""
         if self._extracted_text is None:
             ems = self._emailstore
             text = []
@@ -1449,7 +1465,6 @@ class ExtractText(object):
         heuristic_word_margin=False
 
         """
-
         # Adapted from pdf2txt.py script included in pdfminer3k-1.3.1.
         # On some *.pdf inputs the script raises UnicodeEncodeError:
         # 'ascii' codec can't encode character ...
@@ -1493,7 +1508,6 @@ class ExtractText(object):
         dirbase is the event directory where a temporary directory is created
         to hold temporary files for the attachment extracts.
         """
-
         text = []
         for fn in os.listdir(os.path.join(dirbase, "xls-attachments")):
             sheetname, e = os.path.splitext(fn)
@@ -1535,7 +1549,6 @@ class ExtractText(object):
         A csv.Sniffer determines the csv dialect and text is accepted as csv
         format if the delimeiter seems to be in ',/t;:'.
         """
-
         text = text.getvalue()
         dialect = csv.Sniffer().sniff(text)
         if dialect.delimiter not in ",/t;:":
@@ -1580,7 +1593,7 @@ class ExtractText(object):
             )
 
     def _accept_csv_file_with_nul_characters(self, csvstring):
-        """Dialogue asking what to do with csv file with NULs"""
+        """Dialogue asking what to do with csv file with NULs."""
         nulcount = csvstring.count(_NUL)
         if nulcount:
             if (

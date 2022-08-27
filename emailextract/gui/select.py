@@ -2,9 +2,7 @@
 # Copyright 2014 Roger Marsh
 # Licence: See LICENCE (BSD licence)
 
-"""Email text exraction filter User Interface.
-
-"""
+"""Email text exraction filter User Interface."""
 
 import os
 import tkinter
@@ -34,11 +32,10 @@ startup_minimum_height = 400
 
 
 class SelectError(Exception):
-    pass
+    """Exception class for select module."""
 
 
 class Select(ExceptionHandler):
-
     """Define and use an email select and store configuration file."""
 
     def __init__(
@@ -228,7 +225,7 @@ class Select(ExceptionHandler):
             del self.root
 
     def __del__(self):
-        """ """
+        """Set _configuraion attribute to None."""
         if self._configuration:
             self._configuration = None
 
@@ -606,8 +603,9 @@ class Select(ExceptionHandler):
             lw.tag_add(entryname, start, lw.index(tkinter.INSERT))
 
     def show_decoded_text(self):
-        """Do the email selection and show decoded text for non-human readable
-        parts in message.
+        """Show decoded text for selected emails.
+
+        The non-human readable parts in message become readable by eye.
 
         Parts with Content-Transfer-Encoding set to base64 in other words.
 
@@ -725,8 +723,7 @@ class Select(ExceptionHandler):
             lw.tag_add(entryname, start, lw.index(tkinter.INSERT))
 
     def show_extracted_text(self):
-        """Do the email selection and extract text from email as directed by
-        settings in configuration file (usually etracted.conf)."""
+        """Show extracted text from email guided by configuration file."""
         if self._configuration is None:
             tkinter.messagebox.showinfo(
                 parent=self.get_toplevel(),
@@ -871,7 +868,7 @@ class Select(ExceptionHandler):
         self._tag_names.clear()
 
     def conf_popup(self, event=None):
-        """ """
+        """Popup a dialogue to confirm ignore email in selection."""
         wconf = self.configctrl
         index = wconf.index("".join(("@", str(event.x), ",", str(event.y))))
         start = wconf.index(" ".join((index, "linestart")))
@@ -919,7 +916,7 @@ class Select(ExceptionHandler):
         return
 
     def list_popup(self, event=None):
-        """ """
+        """Popup a dialogue to confirm scrolling to an email."""
         wtext = self.emailtextctrl
         wlist = self.emaillistctrl
         wconf = self.configctrl
@@ -951,7 +948,7 @@ class Select(ExceptionHandler):
                 return
 
     def text_popup(self, event=None):
-        """ """
+        """Popup a dialog to confirm adjustment to email selection."""
         wtext = self.emailtextctrl
         wlist = self.emaillistctrl
         tags = wtext.tag_names(
@@ -1050,7 +1047,7 @@ class Select(ExceptionHandler):
                 return
 
     def _file_exists(self, event=None):
-        """ """
+        """Report on file existence."""
         w = event.widget
         ti = w.index("".join(("@", str(event.x), ",", str(event.y))))
         start = w.index(" ".join((ti, "linestart")))
@@ -1069,7 +1066,6 @@ class Select(ExceptionHandler):
 
 
 class Statusbar(object):
-
     """Status bar for EmailExtract application."""
 
     def __init__(self, root):

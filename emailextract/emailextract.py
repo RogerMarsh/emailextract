@@ -2,7 +2,7 @@
 # Copyright 2017 Roger Marsh
 # Licence: See LICENCE (BSD licence)
 
-"""Email text extraction application"""
+"""Email text extraction application."""
 
 if __name__ == "__main__":
 
