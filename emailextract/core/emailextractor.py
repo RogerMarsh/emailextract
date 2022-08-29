@@ -42,12 +42,12 @@ except ImportError:  # Not ModuleNotFoundError for Pythons earlier than 3.6
 
 try:
     import xlsx2csv
-except:
+except ImportError:
     xlsx2csv = None
 try:
     import pdfminer
     from pdfminer import pdfinterp, layout, converter
-except:
+except ImportError:
     pdfminer = None
 
 # Added when finding out how to use pdfminer3k to extract data from PDF files,
@@ -62,7 +62,7 @@ from solentware_misc.core.utilities import AppSysDate
 # emails.
 try:
     from emailstore.core.emailcollector import COLLECTED
-except:
+except ImportError:
     COLLECTED = "collected"
 
 # Python is installed in C: by default on Microsft Windows, so it is deemed
@@ -243,23 +243,23 @@ class EmailExtractor(object):
     email_select_line = re.compile(
         "".join(
             (
-                "\A",
+                r"\A",
                 "(?:",
                 "(?:",  # whitespace line
-                "\s*",
+                r"\s*",
                 ")|",
                 "(?:",  # comment line
-                "\s*#.*",
+                r"\s*#.*",
                 ")|",
                 "(?:",  # parameter line
-                "\s*(\S+?)\s+([^#]*).*",
+                r"\s*(\S+?)\s+([^#]*).*",
                 ")",
                 ")",
-                "\Z",
+                r"\Z",
             )
         )
     )
-    replace_value_columns = re.compile("\+|\*")
+    replace_value_columns = re.compile(r"\+|\*")
 
     def __init__(
         self,
@@ -594,7 +594,7 @@ class ExtractEmail(object):
                                 from_conf = line[1].strip()
                     if from_conf:
                         collected = from_conf
-                except:
+                except Exception:
                     tkinter.messagebox.showinfo(
                         parent=self.parent,
                         title="Read Configuration File",
@@ -607,7 +607,7 @@ class ExtractEmail(object):
                     )
                 finally:
                     cc.close()
-            except:
+            except Exception:
                 pass
         if collected is None:
             ms = COLLECTED
@@ -719,7 +719,7 @@ class ExtractEmail(object):
         if self.earliestdate is not None:
             try:
                 date(*tuple([int(d) for d in self.earliestdate.split("-")]))
-            except:
+            except Exception:
                 tkinter.messagebox.showinfo(
                     parent=self.parent,
                     title="Get Emails",
@@ -734,7 +734,7 @@ class ExtractEmail(object):
         if self.mostrecentdate is not None:
             try:
                 date(*tuple([int(d) for d in self.mostrecentdate.split("-")]))
-            except:
+            except Exception:
                 tkinter.messagebox.showinfo(
                     parent=self.parent,
                     title="Get Emails",
@@ -1122,7 +1122,7 @@ class ExtractText(object):
         a = _decode_header(filename)
         try:
             os.mkdir(os.path.join(dirbase, "xls-attachments"))
-        except:
+        except FileExistsError:
             pass
         op = open(os.path.join(dirbase, "xls-attachments", a), "wb")
         try:
@@ -1309,7 +1309,7 @@ class ExtractText(object):
                 text.append("\n\n".join(sstext))
 
     def get_docx_text(self, payload, dirbase):
-        """Return text extracted from part, an Office Open XML email attachment.
+        """Return text from payload, an Office Open XML email attachment.
 
         This is Microsoft's *.docx format, not to be confused with *.odt format
         which is Open Office XML (or Open Document Format).
@@ -1338,7 +1338,7 @@ class ExtractText(object):
         return "\n".join(text)
 
     def get_odt_text(self, payload, dirbase):
-        """Return text extracted from part, an Open Office XML email attachment.
+        """Return text from payload, an Open Office XML email attachment.
 
         This is *.odt format (or Open Document Format), not to be confused
         with Microsoft's *.docx format (or Office Open XML).
@@ -1397,7 +1397,7 @@ class ExtractText(object):
         dirbase = self._emailstore.eventdirectory
         try:
             os.mkdir(os.path.join(dirbase, "pdf-attachments"))
-        except:
+        except FileExistsError:
             pass
         op = open(os.path.join(dirbase, "pdf-attachments", a), "wb")
         try:
@@ -1678,6 +1678,6 @@ class ExtractText(object):
 
 
 def _decode_header(value):
-    """Decode a parameter according to RFC2231 and return the decoded string."""
+    """Decode value according to RFC2231 and return the decoded string."""
     b, c = email.header.decode_header(value)[0]
     return b if c is None else b.decode(c)

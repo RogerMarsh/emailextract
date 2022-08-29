@@ -22,12 +22,17 @@ if __name__ == "__main__":
                 title="Start Exception",
                 message=".\n\nThe reported exception is:\n\n".join(
                     (
-                        "Unable to import solentware_misc.gui.startstop module",
+                        " ".join(
+                            (
+                                "Unable to import",
+                                "solentware_misc.gui.startstop module",
+                            )
+                        ),
                         str(error),
                     )
                 ),
             )
-        except:
+        except BaseException:
             pass
         raise SystemExit("Unable to import start application utilities")
     try:

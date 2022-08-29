@@ -219,7 +219,7 @@ class Select(ExceptionHandler):
             self._folder = folder
             self._most_recent_action = None
 
-        except:
+        except Exception:
             raise
             self.root.destroy()
             del self.root
