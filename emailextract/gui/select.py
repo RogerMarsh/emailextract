@@ -430,7 +430,7 @@ class Select(Bindings):
             )
             return
         config_text = ConfigureDialog(
-            self.root,
+            master=self.root,
             configuration=self.configctrl.get(
                 "1.0", " ".join((tkinter.END, "-1 chars"))
             ),
