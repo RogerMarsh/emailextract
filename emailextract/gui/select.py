@@ -15,7 +15,7 @@ from solentware_misc.gui.bindings import Bindings
 from solentware_misc.gui import textreadonly
 from solentware_misc.gui.configuredialog import ConfigureDialog
 
-from . import help
+from . import help_
 from .. import APPLICATION_NAME
 from ..core.emailextractor import (
     EmailExtractor,
@@ -233,15 +233,15 @@ class Select(Bindings):
 
     def help_about(self):
         """Display information about EmailExtract."""
-        help.help_about(self.root)
+        help_.help_about(self.root)
 
     def help_guide(self):
         """Display brief User Guide for EmailExtract."""
-        help.help_guide(self.root)
+        help_.help_guide(self.root)
 
     def help_notes(self):
         """Display technical notes about EmailExtract."""
-        help.help_notes(self.root)
+        help_.help_notes(self.root)
 
     def get_toplevel(self):
         """Return the toplevel widget."""
