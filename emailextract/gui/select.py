@@ -11,7 +11,8 @@ import tkinter.filedialog
 from email.utils import parseaddr, parsedate_tz
 from time import strftime
 
-from solentware_misc.gui.bindings import Bindings
+from solentware_bind.gui.bindings import Bindings
+
 from solentware_misc.gui import textreadonly
 from solentware_misc.gui.configuredialog import ConfigureDialog
 
@@ -216,7 +217,7 @@ class Select(Bindings):
                 (self.emaillistctrl, "<ButtonPress-3>", self.list_popup),
                 (self.emailtextctrl, "<ButtonPress-3>", self.text_popup),
             ):
-                widget.bind(sequence, self.try_event(function))
+                self.bind(widget, sequence, function=function)
             self._folder = folder
             self._most_recent_action = None
 
