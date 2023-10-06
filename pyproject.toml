@@ -10,7 +10,7 @@ line-length = 79
 
 [project]
 name = "emailextract"
-version = "0.7.10.dev1"
+version = "0.7.10"
 authors = [
   { name="Roger Marsh", email="roger.marsh@solentware.co.uk" },
 ]
@@ -31,7 +31,7 @@ classifiers = [
 license = {file = "LICENCE"}
 readme = "README"
 dependencies = [
-    "solentware-misc==1.6.dev1",
+    "solentware-misc==1.6",
 ]
 
 [project.urls]
