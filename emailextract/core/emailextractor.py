@@ -78,7 +78,7 @@ else:
     # xpdf installation notes for Microsoft Windows say 'copy everything to an
     # installation directory, e.g. C:/Program Files/Xpdf'.
     # Try to choose the 32-bit or 64-bit executable as appropriate.
-    if sys.maxsize > 2 ** 32:
+    if sys.maxsize > 2**32:
         xpdf = os.path.join("Xpdf", "bin64")
     else:
         xpdf = os.path.join("Xpdf", "bin32")
@@ -129,18 +129,20 @@ else:
     # If Gnumeric is not installed, look for xlsx2csv.py in site-packages.
     sstocsvdir = os.path.join(os.environ["PROGRAMFILES"], "Gnumeric")
     if os.path.isdir(sstocsvdir):
-        sstocsv = set(os.listdir(sstocsvdir))
+        _GNUMERIC_SSTOCSV = set(os.listdir(sstocsvdir))
     else:
-        sstocsv = None
-    if sstocsv:
-        sstocsv = os.path.join(sstocsvdir, sstocsv.pop(), "bin", _SSTOCSV)
-        if os.path.isfile(sstocsv):
-            _SSTOCSV = sstocsv
+        _GNUMERIC_SSTOCSV = None
+    if _GNUMERIC_SSTOCSV:
+        _GNUMERIC_SSTOCSV = os.path.join(
+            sstocsvdir, _GNUMERIC_SSTOCSV.pop(), "bin", _SSTOCSV
+        )
+        if os.path.isfile(_GNUMERIC_SSTOCSV):
+            _SSTOCSV = _GNUMERIC_SSTOCSV
         else:
             _SSTOCSV = None
     else:
         _SSTOCSV = None
-    del sstocsvdir, sstocsv
+    del sstocsvdir, _GNUMERIC_SSTOCSV
 
 # _SSTOCSV is left alone so that ssconvert is used if it is available, despite
 # the problems cited in August 2014.
@@ -232,7 +234,7 @@ class EmailExtractorError(Exception):
 # There are two distinct sets of configuration settings; email selection and
 # parsing rules. EmailExtractor will end up a subclass of "Parse" which can be
 # shared with EventSeason for text parsing rules.
-class EmailExtractor(object):
+class EmailExtractor:
     """Extract emails matching selection criteria from email client store.
 
     By default look for emails sent or received using the Opera email client
@@ -303,7 +305,7 @@ class EmailExtractor(object):
     def _select_emails(self):
         """Calculate and return emails matching requested from addressees."""
         if self.criteria is None:
-            return
+            return None
         self.email_client = self._extractemail(
             eventdirectory=self._folder, **self.criteria
         )
@@ -321,7 +323,7 @@ class EmailExtractor(object):
         """Return set of emails to ignore."""
         if not self.email_client:
             if not self._select_emails():
-                return
+                return None
         return self.email_client.excluded_emails
 
     @property
@@ -332,7 +334,7 @@ class EmailExtractor(object):
     @property
     def outputdirectory(self):
         """Return the path name of the extracted directory."""
-        return self.email_client._extracts
+        return self.email_client.extracts
 
     def copy_emails(self):
         """Copy text of emails selected from collected to extracted directory.
@@ -363,7 +365,7 @@ class EmailExtractor(object):
                 additional.append(em)
         if difference_tags:
             return difference_tags, None
-        elif additional:
+        if additional:
             w = " emails " if len(additional) > 1 else " email "
             if (
                 tkinter.messagebox.askquestion(
@@ -380,7 +382,7 @@ class EmailExtractor(object):
                 )
                 != tkinter.messagebox.YES
             ):
-                return
+                return None
         else:
             return None, additional
         try:
@@ -391,7 +393,6 @@ class EmailExtractor(object):
             try:
                 em.write_additional_file()
             except FileNotFoundError as exc:
-                excdir = os.path.basename(os.path.dirname(exc.filename))
                 tkinter.messagebox.showinfo(
                     parent=self.parent,
                     title="Update Extracted Text",
@@ -404,7 +405,7 @@ class EmailExtractor(object):
                         )
                     ),
                 )
-                return
+                return None
         return None, additional
 
     def ignore_email(self, filename):
@@ -420,7 +421,7 @@ class EmailExtractor(object):
         self.email_client.ignore.remove(filename)
 
 
-class Parser(object):
+class Parser:
     """Parse configuration file."""
 
     def __init__(self, parent=None):
@@ -473,7 +474,7 @@ class Parser(object):
             args[args_key].setdefault(v[-1], set())
             return
         if args_key not in args:
-            args[args_key] = dict()
+            args[args_key] = {}
         args[args_key].setdefault(v[1], set()).update(v[2].split(sep=sep))
 
     def _parse_error_dialogue(self, message):
@@ -530,11 +531,10 @@ class MessageFile(EmailMessage):
             ts = strftime("%Y%m%d%H%M%S", t[:-1])
             utc = "".join((format(t[-1] // 3600, "0=+3"), "00"))
             return "".join((ts, f, utc, ".mbs"))
-        else:
-            return False
+        return False
 
 
-class ExtractEmail(object):
+class ExtractEmail:
     """Extract emails matching selection criteria from email store."""
 
     def __init__(
@@ -576,6 +576,7 @@ class ExtractEmail(object):
         reports - difference file for event result reports
 
         """
+        del media_types, soak
         self.parent = parent
         if extracttext is None:
             self._extracttext = ExtractText
@@ -583,10 +584,9 @@ class ExtractEmail(object):
             self._extracttext = extracttext
         if collect_conf:
             try:
-                cc = open(
+                with open(
                     os.path.join(eventdirectory, collect_conf), encoding="utf8"
-                )
-                try:
+                ) as cc:
                     for line in cc.readlines():
                         line = line.split(" ", 1)
                         if line[0] == COLLECTED:
@@ -594,30 +594,26 @@ class ExtractEmail(object):
                                 from_conf = line[1].strip()
                     if from_conf:
                         collected = from_conf
-                except Exception:
-                    tkinter.messagebox.showinfo(
-                        parent=self.parent,
-                        title="Read Configuration File",
-                        message="".join(
-                            (
-                                "Unable to determine collected directory.\n\n",
-                                "Using name from extract configuration.",
-                            )
-                        ),
-                    )
-                finally:
-                    cc.close()
             except Exception:
-                pass
+                tkinter.messagebox.showinfo(
+                    parent=self.parent,
+                    title="Read Configuration File",
+                    message="".join(
+                        (
+                            "Unable to determine collected directory.\n\n",
+                            "Using name from extract configuration.",
+                        )
+                    ),
+                )
         if collected is None:
             ms = COLLECTED
         else:
             ms = os.path.join(eventdirectory, collected)
         self.mailstore = os.path.expanduser(os.path.expandvars(ms))
         if extracted is None:
-            self._extracts = os.path.join(eventdirectory, EXTRACTED)
+            self.extracts = os.path.join(eventdirectory, EXTRACTED)
         else:
-            self._extracts = os.path.join(eventdirectory, extracted)
+            self.extracts = os.path.join(eventdirectory, extracted)
         d = AppSysDate()
         if earliestdate is not None:
             if d.parse_date(earliestdate) == -1:
@@ -718,7 +714,7 @@ class ExtractEmail(object):
         emails = []
         if self.earliestdate is not None:
             try:
-                date(*tuple([int(d) for d in self.earliestdate.split("-")]))
+                date(*tuple(int(d) for d in self.earliestdate.split("-")))
             except Exception:
                 tkinter.messagebox.showinfo(
                     parent=self.parent,
@@ -733,7 +729,7 @@ class ExtractEmail(object):
                 return emails
         if self.mostrecentdate is not None:
             try:
-                date(*tuple([int(d) for d in self.mostrecentdate.split("-")]))
+                date(*tuple(int(d) for d in self.mostrecentdate.split("-")))
             except Exception:
                 tkinter.messagebox.showinfo(
                     parent=self.parent,
@@ -755,6 +751,8 @@ class ExtractEmail(object):
                         continue
                 if ems:
                     for e in ems:
+                        # pycodestyle E203 whitespace before ':'.
+                        # black insists on the space.
                         if e == a[8 : 8 + len(e)]:
                             break
                     else:
@@ -811,7 +809,7 @@ class ExtractEmail(object):
         return set(self.ignore)
 
 
-class ExtractText(object):
+class ExtractText:
     """Repreresent the stages in processing an email."""
 
     def __init__(self, filename, emailstore):
@@ -843,7 +841,7 @@ class ExtractText(object):
     def difference_file_path(self):
         """Return difference file's path name without extension."""
         return os.path.join(
-            self._emailstore._extracts, os.path.splitext(self.filename)[0]
+            self._emailstore.extracts, os.path.splitext(self.filename)[0]
         )
 
     @property
@@ -875,15 +873,13 @@ class ExtractText(object):
         # account owner to another can get selected.
         if from_ in selection:
             return self.message.generate_filename()
-        else:
-            return False
+        return False
 
     @property
     def message(self):
         """Return object created by email.message_from_binary_file function."""
         if self._message is None:
-            mf = open(self.email_path, "rb")
-            try:
+            with open(self.email_path, "rb") as mf:
                 self._message = message_from_binary_file(
                     mf, _class=MessageFile
                 )
@@ -895,15 +891,12 @@ class ExtractText(object):
                     parsedate_tz(d)[:-1]
                     for d in self.message.get_all("delivery-date", [])
                 ]
-            finally:
-                mf.close()
         return self._message
 
     @property
     def encoded_text(self):
         """Return encoded text extracted from emails."""
         if self._encoded_text is None:
-            ems = self._emailstore
             text = []
             for p in self.message.walk():
                 cte = p.get("Content-Transfer-Encoding")
@@ -1105,17 +1098,17 @@ class ExtractText(object):
         ems = self._emailstore
         if ems.include_ss_file_sheet:
             if attachment_filename not in ems.include_ss_file_sheet:
-                return
+                return None
         elif ems.exclude_ss_file_sheet:
             if attachment_filename in ems.exclude_ss_file_sheet:
-                return
+                return None
         if _decode_header(attachment_filename) is None:
             tkinter.messagebox.showinfo(
                 parent=self._emailstore.parent,
                 title="Extract Spreadsheet Data",
                 message="Spreadsheet attachment does not have a filename.",
             )
-            return
+            return None
         return True
 
     def _create_temporary_attachment_file(self, filename, payload, dirbase):
@@ -1124,11 +1117,8 @@ class ExtractText(object):
             os.mkdir(os.path.join(dirbase, "xls-attachments"))
         except FileExistsError:
             pass
-        op = open(os.path.join(dirbase, "xls-attachments", a), "wb")
-        try:
+        with open(os.path.join(dirbase, "xls-attachments", a), "wb") as op:
             op.write(payload)
-        finally:
-            op.close()
         return a
 
     def _get_ss_text_using_gnumeric(self, filename, payload, text):
@@ -1139,11 +1129,11 @@ class ExtractText(object):
         taf = self._create_temporary_attachment_file(
             filename, payload, ems.eventdirectory
         )
-        process = subprocess.Popen(
+        with subprocess.Popen(
             (_SSTOCSV, "--recalc", "-S", taf, "%s.csv"),
             cwd=os.path.join(ems.eventdirectory, "xls-attachments"),
-        )
-        process.wait()
+        ) as process:
+            pass
         if process.returncode == 0:
             sstext = []
             for sheet, sheettext in self.get_spreadsheet_text(
@@ -1256,9 +1246,7 @@ class ExtractText(object):
                     if c > trailing or c < leading:
                         del r[c]
             return [
-                r
-                for r in rows
-                if len([v for v in r.values() if v is not None])
+                r for r in rows if [v for v in r.values() if v is not None]
             ]
 
         ems = self._emailstore
@@ -1269,11 +1257,11 @@ class ExtractText(object):
         elif ems.exclude_ss_file_sheet:
             if fn in ems.exclude_ss_file_sheet:
                 return
-        xmlzip = zipfile.ZipFile(io.BytesIO(payload))
         archive = {}
-        for n in xmlzip.namelist():
-            with xmlzip.open(n) as f:
-                archive[n] = f.read()
+        with zipfile.ZipFile(io.BytesIO(payload)) as xmlzip:
+            for n in xmlzip.namelist():
+                with xmlzip.open(n) as f:
+                    archive[n] = f.read()
         for k, v in archive.items():
             if os.path.basename(k) == "content.xml":
                 tree = xml.etree.ElementTree.XML(v)
@@ -1294,7 +1282,7 @@ class ExtractText(object):
                         rows = get_rows(table)
                         if not rows:
                             continue
-                        fieldnames = [c for c in sorted(rows[0].keys())]
+                        fieldnames = sorted(rows[0].keys())
                         csvfile = io.StringIO()
                         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
                         writer.writerows(rows)
@@ -1304,8 +1292,8 @@ class ExtractText(object):
                                     csvfile, sheet=sheet
                                 )
                             )
-                        except KeyError:
-                            raise EmailExtractorError
+                        except KeyError as exc:
+                            raise EmailExtractorError from exc
                 text.append("\n\n".join(sstext))
 
     def get_docx_text(self, payload, dirbase):
@@ -1318,13 +1306,14 @@ class ExtractText(object):
         # Thanks to
         # http://etienned.github.io/posts/extract-text-from-word-docs-simply/
         # for which pieces to take from *.docx file.
+        del dirbase
         nsb = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
 
-        xmlzip = zipfile.ZipFile(io.BytesIO(payload))
         archive = {}
-        for n in xmlzip.namelist():
-            with xmlzip.open(n) as f:
-                archive[n] = f.read()
+        with zipfile.ZipFile(io.BytesIO(payload)) as xmlzip:
+            for n in xmlzip.namelist():
+                with xmlzip.open(n) as f:
+                    archive[n] = f.read()
         text = []
         for k, v in archive.items():
             if os.path.basename((os.path.splitext(k)[0])) == "document":
@@ -1344,6 +1333,7 @@ class ExtractText(object):
         with Microsoft's *.docx format (or Office Open XML).
 
         """
+        del dirbase
         nsb = "{urn:oasis:names:tc:opendocument:xmlns:text:1.0}"
         topelems = {nsb + "p", nsb + "h"}
 
@@ -1370,11 +1360,11 @@ class ExtractText(object):
                 text.append(element.tail)
             return "".join(text)
 
-        xmlzip = zipfile.ZipFile(io.BytesIO(payload))
         archive = {}
-        for n in xmlzip.namelist():
-            with xmlzip.open(n) as f:
-                archive[n] = f.read()
+        with zipfile.ZipFile(io.BytesIO(payload)) as xmlzip:
+            for n in xmlzip.namelist():
+                with xmlzip.open(n) as f:
+                    archive[n] = f.read()
         text = []
         for k, v in archive.items():
             if os.path.basename((os.path.splitext(k)[0])) == "content":
@@ -1399,12 +1389,9 @@ class ExtractText(object):
             os.mkdir(os.path.join(dirbase, "pdf-attachments"))
         except FileExistsError:
             pass
-        op = open(os.path.join(dirbase, "pdf-attachments", a), "wb")
-        try:
+        with open(os.path.join(dirbase, "pdf-attachments", a), "wb") as op:
             op.write(payload)
-        finally:
-            op.close()
-        process = subprocess.Popen(
+        with subprocess.Popen(
             (
                 _PDFTOTEXT,
                 "-nopgbrk",  # no way of saying this in pdfminer3k.
@@ -1413,22 +1400,20 @@ class ExtractText(object):
                 aout,
             ),
             cwd=os.path.join(dirbase, "pdf-attachments"),
-        )
-        process.wait()
+        ) as process:
+            pass
         if process.returncode == 0:
             if os.path.exists(os.path.join(dirbase, "pdf-attachments", aout)):
-                op = open(
+                with open(
                     os.path.join(dirbase, "pdf-attachments", aout),
                     "r",
                     encoding="iso-8859-1",
-                )
-                try:
+                ) as op:
                     text.append(op.read())
-                finally:
-                    op.close()
         shutil.rmtree(
             os.path.join(dirbase, "pdf-attachments"), ignore_errors=True
         )
+        return None
 
     def get_pdf_text_using_pdfminer3k(
         self, filename, payload, text, char_margin=150, word_margin=1, **k
@@ -1472,6 +1457,7 @@ class ExtractText(object):
         # A sample ... is '\u2019 in position 0: ordinal not in range(128)'.
         # Changing 'outfp = io.open(...)' to 'outfp = open(...)' was sufficient
         # but here it is most convenient to say 'outfp = io.StringIO()'.
+        del filename
         caching = True
         rsrcmgr = pdfinterp.PDFResourceManager(caching=caching)
         laparams = layout.LAParams(
@@ -1526,8 +1512,8 @@ class ExtractText(object):
                         ),
                     )
                 )
-            except KeyError:
-                raise EmailExtractorError
+            except KeyError as exc:
+                raise EmailExtractorError from exc
             except csv.Error as exc:
                 tkinter.messagebox.showinfo(
                     parent=self._emailstore.parent,
@@ -1549,6 +1535,7 @@ class ExtractText(object):
         A csv.Sniffer determines the csv dialect and text is accepted as csv
         format if the delimeiter seems to be in ',/t;:'.
         """
+        del sheet, filename
         text = text.getvalue()
         dialect = csv.Sniffer().sniff(text)
         if dialect.delimiter not in ",/t;:":
@@ -1566,8 +1553,8 @@ class ExtractText(object):
             return self.extract_text_from_csv(
                 io.StringIO(self._decode_payload(payload, charset))
             )
-        except KeyError:
-            raise EmailExtractorError
+        except KeyError as exc:
+            raise EmailExtractorError from exc
 
     def _decode_payload(self, payload, charset):
         """Return decoded payload; try 'utf-8' then 'iso-8859-1'.
@@ -1584,13 +1571,11 @@ class ExtractText(object):
                 return self._accept_csv_file_with_nul_characters(
                     payload.decode(encoding=c)
                 )
-                return t
             except UnicodeDecodeError:
                 pass
-        else:
-            return self._accept_csv_file_with_nul_characters(
-                payload.decode(encoding="ascii", errors="replace")
-            )
+        return self._accept_csv_file_with_nul_characters(
+            payload.decode(encoding="ascii", errors="replace")
+        )
 
     def _accept_csv_file_with_nul_characters(self, csvstring):
         """Dialogue asking what to do with csv file with NULs."""
@@ -1627,21 +1612,17 @@ class ExtractText(object):
 
         """
         for c in "utf-8", "iso-8859-1":
-            csvfile = open(csvpath, encoding=c)
             try:
-                return io.StringIO(csvfile.read())
+                with open(csvpath, encoding=c) as csvfile:
+                    return io.StringIO(csvfile.read())
             except UnicodeDecodeError:
                 pass
-            finally:
-                csvfile.close()
-        else:
-            csvfile = open(csvpath, encoding="ascii", errors="replace")
-            try:
+        try:
+            with open(csvpath, encoding="ascii", errors="replace") as csvfile:
                 return io.StringIO(csvfile.read())
-            except UnicodeDecodeError:
-                pass
-            finally:
-                csvfile.close()
+        except UnicodeDecodeError:
+            pass
+        return None
 
     @property
     def edit_differences(self):
@@ -1660,16 +1641,13 @@ class ExtractText(object):
     def write_additional_file(self):
         """Write difference file, utf-8 encoding, if file does not exist."""
         if self._difference_file_exists is False:
-            f = open(
+            with open(
                 self.difference_file_path,
                 mode="w",
                 encoding="utf8",
-            )
-            try:
-                f.writelines(self.edit_differences)
+            ) as outfile:
+                outfile.writelines(self.edit_differences)
                 self._difference_file_exists = True
-            finally:
-                f.close()
 
     @property
     def dates(self):

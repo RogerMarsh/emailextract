@@ -28,8 +28,8 @@ from ..core.emailextractor import (
     EXTRACTED_CONF,
 )
 
-startup_minimum_width = 340
-startup_minimum_height = 400
+STARTUP_MINIMUM_WIDTH = 340
+STARTUP_MINIMUM_HEIGHT = 400
 
 
 class SelectError(Exception):
@@ -57,174 +57,164 @@ class Select(Bindings):
             self.root = tkinter.Toplevel(**kargs)
         else:
             self.root = tkinter.Tk()
-        try:
-            self.application_name = application_name
-            if emailextractor:
-                self._emailextractor = emailextractor
-            else:
-                self._emailextractor = EmailExtractor
-            if folder is not None:
-                self.root.wm_title(" - ".join((application_name, folder)))
-            else:
-                self.root.wm_title(application_name)
-            self.root.wm_minsize(
-                width=startup_minimum_width, height=startup_minimum_height
-            )
+        self.application_name = application_name
+        if emailextractor:
+            self._emailextractor = emailextractor
+        else:
+            self._emailextractor = EmailExtractor
+        if folder is not None:
+            self.root.wm_title(" - ".join((application_name, folder)))
+        else:
+            self.root.wm_title(application_name)
+        self.root.wm_minsize(
+            width=STARTUP_MINIMUM_WIDTH, height=STARTUP_MINIMUM_HEIGHT
+        )
 
-            self._configuration = None
-            self._configuration_edited = False
-            self._email_collector = None
-            self._tag_names = set()
+        self._configuration = None
+        self._configuration_edited = False
+        self._email_collector = None
+        self._tag_names = set()
 
-            menubar = tkinter.Menu(self.root)
+        menubar = tkinter.Menu(self.root)
 
-            menufile = tkinter.Menu(menubar, name="file", tearoff=False)
-            menubar.add_cascade(label="File", menu=menufile, underline=0)
-            menufile.add_command(
-                label="Open",
-                underline=0,
-                command=self.try_command(self.file_open, menufile),
-            )
-            menufile.add_command(
-                label="New",
-                underline=0,
-                command=self.try_command(self.file_new, menufile),
-            )
-            menufile.add_separator()
-            # menufile.add_command(
-            #    label='Save',
-            #    underline=0,
-            #    command=self.try_command(self.file_save, menufile))
-            menufile.add_command(
-                label="Save Copy As...",
-                underline=7,
-                command=self.try_command(self.file_save_copy_as, menufile),
-            )
-            menufile.add_separator()
-            menufile.add_command(
-                label="Close",
-                underline=0,
-                command=self.try_command(self.file_close, menufile),
-            )
-            menufile.add_separator()
-            menufile.add_command(
-                label="Quit",
-                underline=0,
-                command=self.try_command(self.file_quit, menufile),
-            )
+        menufile = tkinter.Menu(menubar, name="file", tearoff=False)
+        menubar.add_cascade(label="File", menu=menufile, underline=0)
+        menufile.add_command(
+            label="Open",
+            underline=0,
+            command=self.try_command(self.file_open, menufile),
+        )
+        menufile.add_command(
+            label="New",
+            underline=0,
+            command=self.try_command(self.file_new, menufile),
+        )
+        menufile.add_separator()
+        # menufile.add_command(
+        #    label='Save',
+        #    underline=0,
+        #    command=self.try_command(self.file_save, menufile))
+        menufile.add_command(
+            label="Save Copy As...",
+            underline=7,
+            command=self.try_command(self.file_save_copy_as, menufile),
+        )
+        menufile.add_separator()
+        menufile.add_command(
+            label="Close",
+            underline=0,
+            command=self.try_command(self.file_close, menufile),
+        )
+        menufile.add_separator()
+        menufile.add_command(
+            label="Quit",
+            underline=0,
+            command=self.try_command(self.file_quit, menufile),
+        )
 
-            menuactions = tkinter.Menu(menubar, name="actions", tearoff=False)
-            menubar.add_cascade(label="Actions", menu=menuactions, underline=0)
-            menuactions.add_command(
-                label="Source emails",
-                underline=0,
-                command=self.try_command(self.show_email_source, menuactions),
-            )
-            menuactions.add_command(
-                label="Decoded text",
-                underline=0,
-                command=self.try_command(self.show_decoded_text, menuactions),
-            )
-            menuactions.add_command(
-                label="Extracted text",
-                underline=0,
-                command=self.try_command(
-                    self.show_extracted_text, menuactions
-                ),
-            )
-            menuactions.add_command(
-                label="Update",
-                underline=0,
-                command=self.try_command(
-                    self.update_difference_files, menuactions
-                ),
-            )
-            menuactions.add_command(
-                label="Clear selection",
-                underline=0,
-                command=self.try_command(self.clear_selection, menuactions),
-            )
-            menuactions.add_separator()
-            menuactions.add_command(
-                label="Option editor",
-                underline=0,
-                command=self.try_command(
-                    self.configure_email_selection, menuactions
-                ),
-            )
+        menuactions = tkinter.Menu(menubar, name="actions", tearoff=False)
+        menubar.add_cascade(label="Actions", menu=menuactions, underline=0)
+        menuactions.add_command(
+            label="Source emails",
+            underline=0,
+            command=self.try_command(self.show_email_source, menuactions),
+        )
+        menuactions.add_command(
+            label="Decoded text",
+            underline=0,
+            command=self.try_command(self.show_decoded_text, menuactions),
+        )
+        menuactions.add_command(
+            label="Extracted text",
+            underline=0,
+            command=self.try_command(self.show_extracted_text, menuactions),
+        )
+        menuactions.add_command(
+            label="Update",
+            underline=0,
+            command=self.try_command(
+                self.update_difference_files, menuactions
+            ),
+        )
+        menuactions.add_command(
+            label="Clear selection",
+            underline=0,
+            command=self.try_command(self.clear_selection, menuactions),
+        )
+        menuactions.add_separator()
+        menuactions.add_command(
+            label="Option editor",
+            underline=0,
+            command=self.try_command(
+                self.configure_email_selection, menuactions
+            ),
+        )
 
-            menuhelp = tkinter.Menu(menubar, name="help", tearoff=False)
-            menubar.add_cascade(label="Help", menu=menuhelp, underline=0)
-            menuhelp.add_command(
-                label="Guide",
-                underline=0,
-                command=self.try_command(self.help_guide, menuhelp),
-            )
-            menuhelp.add_command(
-                label="Notes",
-                underline=0,
-                command=self.try_command(self.help_notes, menuhelp),
-            )
-            menuhelp.add_command(
-                label="About",
-                underline=0,
-                command=self.try_command(self.help_about, menuhelp),
-            )
+        menuhelp = tkinter.Menu(menubar, name="help", tearoff=False)
+        menubar.add_cascade(label="Help", menu=menuhelp, underline=0)
+        menuhelp.add_command(
+            label="Guide",
+            underline=0,
+            command=self.try_command(self.help_guide, menuhelp),
+        )
+        menuhelp.add_command(
+            label="Notes",
+            underline=0,
+            command=self.try_command(self.help_notes, menuhelp),
+        )
+        menuhelp.add_command(
+            label="About",
+            underline=0,
+            command=self.try_command(self.help_about, menuhelp),
+        )
 
-            self.root.configure(menu=menubar)
+        self.root.configure(menu=menubar)
 
-            self.statusbar = Statusbar(self.root)
-            frame = tkinter.PanedWindow(
-                self.root,
-                background="cyan2",
-                opaqueresize=tkinter.FALSE,
-                orient=tkinter.HORIZONTAL,
-            )
-            frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
+        self.statusbar = Statusbar(self.root)
+        frame = tkinter.PanedWindow(
+            self.root,
+            background="cyan2",
+            opaqueresize=tkinter.FALSE,
+            orient=tkinter.HORIZONTAL,
+        )
+        frame.pack(fill=tkinter.BOTH, expand=tkinter.TRUE)
 
-            toppane = tkinter.PanedWindow(
-                master=frame,
-                opaqueresize=tkinter.FALSE,
-                orient=tkinter.HORIZONTAL,
-            )
-            originalpane = tkinter.PanedWindow(
-                master=toppane,
-                opaqueresize=tkinter.FALSE,
-                orient=tkinter.VERTICAL,
-            )
-            emailpane = tkinter.PanedWindow(
-                master=toppane,
-                opaqueresize=tkinter.FALSE,
-                orient=tkinter.VERTICAL,
-            )
-            self.configctrl = textreadonly.make_text_readonly(
-                master=originalpane, width=80
-            )
-            self.emaillistctrl = textreadonly.make_text_readonly(
-                master=originalpane, width=80
-            )
-            self.emailtextctrl = textreadonly.make_text_readonly(
-                master=emailpane
-            )
-            originalpane.add(self.configctrl)
-            originalpane.add(self.emaillistctrl)
-            emailpane.add(self.emailtextctrl)
-            toppane.add(originalpane)
-            toppane.add(emailpane)
-            toppane.pack(side=tkinter.TOP, expand=True, fill=tkinter.BOTH)
-            for widget, sequence, function in (
-                (self.configctrl, "<ButtonPress-3>", self.conf_popup),
-                (self.emaillistctrl, "<ButtonPress-3>", self.list_popup),
-                (self.emailtextctrl, "<ButtonPress-3>", self.text_popup),
-            ):
-                self.bind(widget, sequence, function=function)
-            self._folder = folder
-            self._most_recent_action = None
-
-        except Exception:
-            raise
-            self.root.destroy()
-            del self.root
+        toppane = tkinter.PanedWindow(
+            master=frame,
+            opaqueresize=tkinter.FALSE,
+            orient=tkinter.HORIZONTAL,
+        )
+        originalpane = tkinter.PanedWindow(
+            master=toppane,
+            opaqueresize=tkinter.FALSE,
+            orient=tkinter.VERTICAL,
+        )
+        emailpane = tkinter.PanedWindow(
+            master=toppane,
+            opaqueresize=tkinter.FALSE,
+            orient=tkinter.VERTICAL,
+        )
+        self.configctrl = textreadonly.make_text_readonly(
+            master=originalpane, width=80
+        )
+        self.emaillistctrl = textreadonly.make_text_readonly(
+            master=originalpane, width=80
+        )
+        self.emailtextctrl = textreadonly.make_text_readonly(master=emailpane)
+        originalpane.add(self.configctrl)
+        originalpane.add(self.emaillistctrl)
+        emailpane.add(self.emailtextctrl)
+        toppane.add(originalpane)
+        toppane.add(emailpane)
+        toppane.pack(side=tkinter.TOP, expand=True, fill=tkinter.BOTH)
+        for widget, sequence, function in (
+            (self.configctrl, "<ButtonPress-3>", self.conf_popup),
+            (self.emaillistctrl, "<ButtonPress-3>", self.list_popup),
+            (self.emailtextctrl, "<ButtonPress-3>", self.text_popup),
+        ):
+            self.bind(widget, sequence, function=function)
+        self._folder = folder
+        self._most_recent_action = None
 
     def __del__(self):
         """Set _configuraion attribute to None."""
@@ -305,13 +295,10 @@ class Select(Bindings):
         self.configctrl.insert(
             tkinter.END, " ".join((EXTRACTED, EXTRACTED)) + os.linesep
         )
-        fn = open(config_file, "w", encoding="utf8")
-        try:
+        with open(config_file, "w", encoding="utf8") as fn:
             fn.write(
                 self.configctrl.get("1.0", " ".join((tkinter.END, "-1 chars")))
             )
-        finally:
-            fn.close()
         self._configuration = config_file
         self._folder = os.path.dirname(config_file)
         self.root.wm_title(" - ".join((self.application_name, config_file)))
@@ -335,12 +322,9 @@ class Select(Bindings):
         )
         if not config_file:
             return
-        fn = open(config_file, "r", encoding="utf8")
-        try:
+        with open(config_file, "r", encoding="utf8") as fn:
             self.configctrl.delete("1.0", tkinter.END)
             self.configctrl.insert(tkinter.END, fn.read())
-        finally:
-            fn.close()
         self._configuration = config_file
         self._folder = os.path.dirname(config_file)
         self.root.wm_title(" - ".join((self.application_name, config_file)))
@@ -413,13 +397,10 @@ class Select(Bindings):
                 ),
             )
             return
-        fn = open(config_file, "w")
-        try:
+        with open(config_file, "w", encoding="utf8") as fn:
             fn.write(
                 self.configctrl.get("1.0", " ".join((tkinter.END, "-1 chars")))
             )
-        finally:
-            fn.close()
 
     def configure_email_selection(self):
         """Set parameters that control extraction from emails."""
@@ -444,8 +425,7 @@ class Select(Bindings):
         self._configuration_edited = True
         self.configctrl.delete("1.0", tkinter.END)
         self.configctrl.insert(tkinter.END, config_text)
-        fn = open(self._configuration, "w", encoding="utf-8")
-        try:
+        with open(self._configuration, "w", encoding="utf-8") as fn:
             fn.write(config_text)
             self._clear_email_tags()
             self.emailtextctrl.delete("1.0", tkinter.END)
@@ -453,8 +433,6 @@ class Select(Bindings):
             self.statusbar.set_status_text()
             self._configuration_edited = False
             self._email_collector = None
-        finally:
-            fn.close()
         if self._most_recent_action:
             self._most_recent_action()
 
@@ -512,11 +490,6 @@ class Select(Bindings):
         # selected_emails_text can be recovered from the pointer position
         # over the widget.
         tags = self._tag_names
-        content_type_headers = (
-            "Content-Type",
-            "Content-Transfer-Encoding",
-            "Content-Disposition",
-        )
         for e, em in enumerate(self._email_collector.selected_emails):
             m = em.message
             textname = "x".join(("T", str(e)))
@@ -561,11 +534,6 @@ class Select(Bindings):
         # selected_emails_text can be recovered from the pointer position
         # over the widget.
         tags = self._tag_names
-        content_type_headers = (
-            "Content-Type",
-            "Content-Transfer-Encoding",
-            "Content-Disposition",
-        )
         for e, em in enumerate(self._email_collector.selected_emails):
             m = em.message
             met = em.encoded_text
@@ -621,7 +589,7 @@ class Select(Bindings):
                 title="Show Decoded Text",
                 message="Open a text extraction rules file",
             )
-            return
+            return None
         if self._configuration_edited:
             tkinter.messagebox.showinfo(
                 parent=self.get_toplevel(),
@@ -633,7 +601,7 @@ class Select(Bindings):
                     )
                 ),
             )
-            return
+            return None
         if self._email_collector is None:
             emc = self._emailextractor(
                 self._folder,
@@ -643,14 +611,14 @@ class Select(Bindings):
                 parent=self.get_toplevel(),
             )
             if not emc.parse():
-                return
+                return None
             if not emc.selected_emails:
                 tkinter.messagebox.showinfo(
                     parent=self.get_toplevel(),
                     title="Show Decoded Text",
                     message="No emails match the selection rules.",
                 )
-                return
+                return None
             self._email_collector = emc
         try:
             self._show_decoded_text()
@@ -665,7 +633,7 @@ class Select(Bindings):
                     )
                 ),
             )
-            return
+            return None
         self._most_recent_action = self.show_decoded_text
         return True
 
@@ -681,11 +649,6 @@ class Select(Bindings):
         # selected_emails_text can be recovered from the pointer position
         # over the widget.
         tags = self._tag_names
-        content_type_headers = (
-            "Content-Type",
-            "Content-Transfer-Encoding",
-            "Content-Disposition",
-        )
         for e, em in enumerate(self._email_collector.selected_emails):
             m = em.message
             met = em.extracted_text
@@ -733,7 +696,7 @@ class Select(Bindings):
                 title="Show Extracted Text",
                 message="Open a text extraction rules file",
             )
-            return
+            return None
         if self._configuration_edited:
             tkinter.messagebox.showinfo(
                 parent=self.get_toplevel(),
@@ -745,7 +708,7 @@ class Select(Bindings):
                     )
                 ),
             )
-            return
+            return None
         if self._email_collector is None:
             emc = self._emailextractor(
                 self._folder,
@@ -755,14 +718,14 @@ class Select(Bindings):
                 parent=self.get_toplevel(),
             )
             if not emc.parse():
-                return
+                return None
             if not emc.selected_emails:
                 tkinter.messagebox.showinfo(
                     parent=self.get_toplevel(),
                     title="Show Extracted Text",
                     message="No emails match the selection rules.",
                 )
-                return
+                return None
             self._email_collector = emc
         try:
             self._show_extracted_text()
@@ -777,7 +740,7 @@ class Select(Bindings):
                     )
                 ),
             )
-            return
+            return None
         self._most_recent_action = self.show_extracted_text
         return True
 
@@ -817,7 +780,7 @@ class Select(Bindings):
                 ),
             )
             return
-        elif len(additional):
+        if len(additional):
             w = " emails " if len(additional) > 1 else " email "
             tkinter.messagebox.showinfo(
                 parent=self.get_toplevel(),
@@ -832,18 +795,17 @@ class Select(Bindings):
                 ),
             )
             return
-        else:
-            tkinter.messagebox.showinfo(
-                parent=self.get_toplevel(),
-                title="Update Extracted Text",
-                message="".join(
-                    (
-                        "No additional emails.\n\n",
-                        "No text added to version held in database.",
-                    )
-                ),
-            )
-            return
+        tkinter.messagebox.showinfo(
+            parent=self.get_toplevel(),
+            title="Update Extracted Text",
+            message="".join(
+                (
+                    "No additional emails.\n\n",
+                    "No text added to version held in database.",
+                )
+            ),
+        )
+        return
 
     def clear_selection(self):
         """Clear the lists of extracted text."""
@@ -910,12 +872,9 @@ class Select(Bindings):
         if self._email_collector is not None:
             self._email_collector.include_email(text.split(" ", 1)[-1].strip())
         self._configuration_edited = True
-        fn = open(self._configuration, "w", encoding="utf-8")
-        try:
+        with open(self._configuration, "w", encoding="utf-8") as fn:
             fn.write(wconf.get("1.0", " ".join((tkinter.END, "-1 chars"))))
             self._configuration_edited = False
-        finally:
-            fn.close()
         return
 
     def list_popup(self, event=None):
@@ -1039,14 +998,11 @@ class Select(Bindings):
                 wconf.tag_bind(ftag, "<ButtonPress-1>", self._file_exists)
                 self._email_collector.ignore_email(emailname)
                 self._configuration_edited = True
-                fn = open(self._configuration, "w", encoding="utf-8")
-                try:
+                with open(self._configuration, "w", encoding="utf-8") as fn:
                     fn.write(
                         wconf.get("1.0", " ".join((tkinter.END, "-1 chars")))
                     )
                     self._configuration_edited = False
-                finally:
-                    fn.close()
                 return
 
     def _file_exists(self, event=None):
@@ -1068,7 +1024,7 @@ class Select(Bindings):
             )
 
 
-class Statusbar(object):
+class Statusbar:
     """Status bar for EmailExtract application."""
 
     def __init__(self, root):
