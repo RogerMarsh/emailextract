@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-    "setuptools>=61.0",
+    "setuptools>=77.0.3",
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
@@ -10,13 +10,12 @@ line-length = 79
 
 [project]
 name = "emailextract"
-version = "0.7.13"
+version = "0.7.14"
 authors = [
   { name="Roger Marsh", email="roger.marsh@solentware.co.uk" },
 ]
 description = "Extract text from emails."
 classifiers = [
-    "License :: OSI Approved :: BSD License",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -27,10 +26,11 @@ classifiers = [
     "Intended Audience :: Developers",
     "Development Status :: 3 - Alpha",
 ]
-license = {file = "LICENCE"}
+license = "BSD-3-Clause"
+license-files = ["LICENCE"]
 readme = "README"
 dependencies = [
-    "solentware-misc==1.7.1",
+    "solentware-misc==1.7.2",
 ]
 
 [project.urls]
